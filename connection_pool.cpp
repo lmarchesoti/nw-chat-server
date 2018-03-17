@@ -12,7 +12,8 @@ void ConnectionPool::add(std::string name, std::shared_ptr<Connection> conn){
 
 void ConnectionPool::remove(std::string name){
 
-  pool.at(name) = nullptr;
+  //pool.at(name) = nullptr;
+  pool.erase(name);
 }
 
 std::shared_ptr<Connection> ConnectionPool::operator[](std::string name) {
@@ -22,22 +23,18 @@ std::shared_ptr<Connection> ConnectionPool::operator[](std::string name) {
 
 void ConnectionPool::start_listening() {
 
-  if (!fork()){
+  Acceptor acceptor;
+  acceptor.setup();
 
-    Acceptor acceptor;
-    acceptor.setup();
+  while(true) {  // main accept() loop
 
-    while(true) {  // main accept() loop
+    int sock = acceptor.listen_accept();
+    auto conn = std::make_shared<Connection>(sock);
 
-      int sock = acceptor.listen_accept();
-      auto conn = std::make_shared<Connection>(sock);
+    add("john", conn);
+    pool["john"]->send_msg("Hello, world!");
+    remove("john");
 
-      add("john", conn);
-      pool["john"]->send_msg("Hello, world!");
-      remove("john");
-
-      exit(0);
-    }
   }
 }
 

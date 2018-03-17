@@ -51,33 +51,24 @@ int Acceptor::listen_accept(){
   struct sockaddr_storage their_addr; // connector's address information
   int new_fd;
 
-  while(true){
+  sin_size = sizeof their_addr;
+  new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
 
-    sin_size = sizeof their_addr;
-    new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
-
-    if (new_fd == -1) {
-	perror("accept");
-	continue;
-    }
-
-    inet_ntop(their_addr.ss_family,
-	get_in_addr((struct sockaddr *)&their_addr),
-	s, sizeof s);
-    printf("server: got connection from %s\n", s);
-
-    if (!fork()) { // this is the child process
-      close(sockfd); // child doesn't need the listener
-      return new_fd;
-    }
-
-    close(new_fd);  // parent doesn't need this
+  if (new_fd == -1) {
+      perror("accept");
+      exit(1);
   }
+
+  inet_ntop(their_addr.ss_family,
+      get_in_addr((struct sockaddr *)&their_addr),
+      s, sizeof s);
+  printf("server: got connection from %s\n", s);
+
+  return new_fd;
 }
 
 void Acceptor::setup() {
 
-    //int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     struct sigaction sa;
@@ -91,7 +82,6 @@ void Acceptor::setup() {
 
     if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        //return 1;
 	exit(1);
     }
 
