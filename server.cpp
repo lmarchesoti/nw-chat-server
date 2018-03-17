@@ -3,6 +3,12 @@
 */
 
 #include "acceptor.h"
+#include "connection.h"
+#include "connection_pool.h"
+
+#include <map>
+#include <memory>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -16,49 +22,27 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#include <string>
 
-class Connection {
-
-public:
-  Connection(int sock) : sockfd(sock) { };
-  ~Connection();
-  void send_msg(std::string);
-
-private:
-  int sockfd;
-
-};
-
-Connection::~Connection(){
-
-  close(sockfd);
-
-}
-
-void Connection::send_msg(std::string msg){
-
-  if (send(sockfd, msg.c_str(), msg.length(), 0) == -1)
-      perror("send");
-
-}
 
 int main(void)
 {
 
-    int new_fd;
+  ConnectionPool pool;
 
-    Acceptor acceptor;
-    acceptor.setup();
+  Acceptor acceptor;
+  acceptor.setup();
 
-    while(1) {  // main accept() loop
-	//new_fd = acceptor.listen_accept();
-	Connection conn(acceptor.listen_accept());
-	conn.send_msg("Hello, world!");
+  while(1) {  // main accept() loop
 
-	//close(new_fd);
-	exit(0);
-    }
+    int sock = acceptor.listen_accept();
+    auto conn = std::make_shared<Connection>(sock);
 
-    return 0;
+    pool.add("john", conn);
+    pool["john"]->send_msg("Hello, world!");
+    pool.remove("john");
+
+    exit(0);
+  }
+
+  return 0;
 }
