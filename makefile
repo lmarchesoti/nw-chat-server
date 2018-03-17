@@ -14,7 +14,7 @@ clean:
 #server: $(OBJ)
 #$(CXX) $(LDFLAGS) -o server $(OBJ) $(LDLIBS)
 compile c:
-	$(CXX) server.cpp -o server $(CPPFLAGS)
+	$(CXX) *.cpp -o server $(CPPFLAGS)
 
 main.o: server.cpp
 
