@@ -1,11 +1,13 @@
 #ifndef __ACCEPTOR_H_
 #define __ACCEPTOR_H_
 
+#include <memory>
+
 class Acceptor {
 public:
 
   ~Acceptor();
-  int listen_accept();
+  std::shared_ptr<int> listen_accept();
   void setup();
 
 private:

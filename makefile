@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS=-std=c++11 -pthread #-ggdb -I /home/ubuntu/boost_1_66_0/ 
+CPPFLAGS=-std=c++11 -pthread -ggdb #-I /home/ubuntu/boost_1_66_0/ 
 #LDFLAGS=-L/home/ubuntu/boost_1_66_0/stage/lib/ 
 #LDLIBS=-lboost_regex -lpthread -lboost_system
 
@@ -9,7 +9,7 @@ OBJ=$(subst .cpp,.o,$(SRC))
 all: compile
 
 clean:
-	rm src/*.o
+	rm ./*.o
 
 #server: $(OBJ)
 #$(CXX) $(LDFLAGS) -o server $(OBJ) $(LDLIBS)

@@ -44,17 +44,16 @@ Acceptor::~Acceptor(){
 
 }
 
-int Acceptor::listen_accept(){
+std::shared_ptr<int> Acceptor::listen_accept(){
 
   socklen_t sin_size;
   char s[INET6_ADDRSTRLEN];
   struct sockaddr_storage their_addr; // connector's address information
-  int new_fd;
 
   sin_size = sizeof their_addr;
-  new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+  auto new_fd = std::make_shared<int>(accept(sockfd, (struct sockaddr *)&their_addr, &sin_size));
 
-  if (new_fd == -1) {
+  if (*new_fd == -1) {
       perror("accept");
       exit(1);
   }
