@@ -153,3 +153,4 @@ void ConnectionPool::send_user_list(std::string username) {
 
 	this->send_to_user(username, message);
 }
+

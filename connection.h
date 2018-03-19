@@ -25,11 +25,15 @@ public:
 
 private:
 	void listen();
+	void process_disconnect();
+	void process_message(std::string);
+	void process_data(std::string);
 
   std::shared_ptr<int> sockfd;
 	//std::shared_ptr<MsgQueue> msg_q;
 	std::thread listener;
 	ConnectionPool* conn_pool;
+	std::string msg_buffer;
 
 };
 
