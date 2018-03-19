@@ -49,7 +49,9 @@ void ConnectionPool::start_listening() {
 	printf("new user %s\n", username.c_str());
 
 	// send connection notification
-	//this->notify_connect(username);
+	this->broadcast_connection(username);
+
+	// send user list
 
 	this->msg_q->add_message(username, "Hello, world!");
 	sleep(1);
@@ -125,6 +127,13 @@ void ConnectionPool::send_to_user(std::string username, std::string msg) {
 
 void ConnectionPool::broadcast_connection(std::string username) {
 
+  std::lock_guard<std::mutex> lock(this->pool_mutex);
   
+	for(auto it=this->pool.begin(); it!=this->pool.end(); ++it) {
 
+		if (it->first != username) {
+
+			this->msg_q->add_message(it->first, username + " logged in.");
+		}
+	}
 }
