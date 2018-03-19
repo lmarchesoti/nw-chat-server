@@ -17,13 +17,13 @@ ConnectionPool::ConnectionPool() {
 
 void ConnectionPool::add(std::string name, std::shared_ptr<Connection> conn){
 
-  std::lock_guard<std::mutex> lock(this->pool_mutex);
+  std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
   pool[name] = conn;
 }
 
 void ConnectionPool::remove(std::string name){
 
-  std::lock_guard<std::mutex> lock(this->pool_mutex);
+  std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
   pool[name]->disconnect();
   pool.erase(name);
 }
@@ -52,6 +52,7 @@ void ConnectionPool::start_listening() {
 	this->broadcast_connection(username);
 
 	// send user list
+	this->send_user_list(username);
 
 	this->msg_q->add_message(username, "Hello, world!");
 	sleep(1);
@@ -119,7 +120,7 @@ void ConnectionPool::route_messages() {
 
 void ConnectionPool::send_to_user(std::string username, std::string msg) {
 
-  std::lock_guard<std::mutex> lock(this->pool_mutex);
+  std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
 
 	auto conn = this->pool[username];
 	conn->send_msg(msg);
@@ -127,7 +128,7 @@ void ConnectionPool::send_to_user(std::string username, std::string msg) {
 
 void ConnectionPool::broadcast_connection(std::string username) {
 
-  std::lock_guard<std::mutex> lock(this->pool_mutex);
+  std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
   
 	for(auto it=this->pool.begin(); it!=this->pool.end(); ++it) {
 
@@ -136,4 +137,19 @@ void ConnectionPool::broadcast_connection(std::string username) {
 			this->msg_q->add_message(it->first, username + " logged in.");
 		}
 	}
+}
+
+void ConnectionPool::send_user_list(std::string username) {
+
+  std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
+  
+	std::string message = "logged users:\n";
+	for(auto it=this->pool.begin(); it!=this->pool.end(); ++it) {
+
+		if (it->first != username) {
+			message += username + "\n";
+		}
+	}
+
+	this->send_to_user(username, message);
 }

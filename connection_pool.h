@@ -25,8 +25,9 @@ private:
   bool validate_username(std::shared_ptr<Connection>);
 	void send_to_user(std::string, std::string);
 	void broadcast_connection(std::string);
+	void send_user_list(std::string);
 
-  std::mutex pool_mutex;
+  std::recursive_mutex pool_recursive_mutex;
   std::map<std::string, std::shared_ptr<Connection>> pool;
   std::shared_ptr<MsgQueue> msg_q;
 };
