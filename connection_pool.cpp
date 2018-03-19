@@ -109,15 +109,22 @@ void ConnectionPool::route_messages() {
 
 			std::string username = msg_object.first;
 			std::string msg = msg_object.second;
-			auto conn = this->pool[username];
-			conn->send_msg(msg);
+			this->send_to_user(username, msg);
 		}
 	}
 
 }
 
-//void ConnectionPool::notify_connect(std::string username) {
+void ConnectionPool::send_to_user(std::string username, std::string msg) {
+
+  std::lock_guard<std::mutex> lock(this->pool_mutex);
+
+	auto conn = this->pool[username];
+	conn->send_msg(msg);
+}
+
+void ConnectionPool::broadcast_connection(std::string username) {
 
   
 
-//}
+}

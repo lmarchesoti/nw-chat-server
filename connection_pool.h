@@ -23,6 +23,8 @@ public:
 private:
 
   bool validate_username(std::shared_ptr<Connection>);
+	void send_to_user(std::string, std::string);
+	void broadcast_connection(std::string);
 
   std::mutex pool_mutex;
   std::map<std::string, std::shared_ptr<Connection>> pool;
