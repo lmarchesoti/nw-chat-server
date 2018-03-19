@@ -36,7 +36,7 @@ void ConnectionPool::start_listening() {
   while(true) {  // main accept() loop
 
     auto sock = acceptor.listen_accept();
-    auto conn = std::make_shared<Connection>(sock, this->msg_q);
+    auto conn = std::make_shared<Connection>(sock, this);
 
     std::string username = conn->receive();
 
@@ -44,15 +44,15 @@ void ConnectionPool::start_listening() {
 
       if(this->validate_username(conn)) {
 
-	this->add(username, conn);
+				conn->username = username;
 
 	printf("new user %s\n", username.c_str());
 
-	// send connection notification
-	this->broadcast_connection(username);
+	this->add(username, conn);
 
-	// send user list
 	this->send_user_list(username);
+
+	conn->start_listening();
 
 	this->msg_q->add_message(username, "Hello, world!");
 	sleep(1);
@@ -74,7 +74,7 @@ void ConnectionPool::start_listening() {
 
       } else {
 
-	this->remove(username);
+	//this->remove(username);
       }
 
     } else {
@@ -126,7 +126,7 @@ void ConnectionPool::send_to_user(std::string username, std::string msg) {
 	conn->send_msg(msg);
 }
 
-void ConnectionPool::broadcast_connection(std::string username) {
+void ConnectionPool::broadcast(std::string username, std::string message) {
 
   std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
   
@@ -134,7 +134,7 @@ void ConnectionPool::broadcast_connection(std::string username) {
 
 		if (it->first != username) {
 
-			this->msg_q->add_message(it->first, username + " logged in.");
+			this->msg_q->add_message(it->first, message);
 		}
 	}
 }
@@ -147,7 +147,7 @@ void ConnectionPool::send_user_list(std::string username) {
 	for(auto it=this->pool.begin(); it!=this->pool.end(); ++it) {
 
 		if (it->first != username) {
-			message += username + "\n";
+			message += it->first + "\n";
 		}
 	}
 

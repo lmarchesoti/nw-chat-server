@@ -3,22 +3,33 @@
 
 #include <string>
 #include <memory>
+#include <thread>
 
-#include "msg_queue.h"
+//#include "connection_pool.h"
+//#include "msg_queue.h"
+
+class ConnectionPool;
 
 class Connection {
 
 public:
   //Connection() : sockfd(0) { };
-  Connection(std::shared_ptr<int> sock, std::shared_ptr<MsgQueue> mq) : sockfd(sock), msg_q(mq) { };
+  Connection(std::shared_ptr<int> sock, ConnectionPool* cp) : sockfd(sock), conn_pool(cp) { };
   ~Connection();
   void send_msg(std::string);
   std::string receive();
   void disconnect();
+	void start_listening();
+
+	std::string username;
 
 private:
+	void listen();
+
   std::shared_ptr<int> sockfd;
-	std::shared_ptr<MsgQueue> msg_q;
+	//std::shared_ptr<MsgQueue> msg_q;
+	std::thread listener;
+	ConnectionPool* conn_pool;
 
 };
 

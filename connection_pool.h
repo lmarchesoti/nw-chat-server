@@ -19,12 +19,12 @@ public:
   void start_listening();
   void idle();
 	void route_messages();
+	void broadcast(std::string, std::string);
+	void send_to_user(std::string, std::string);
 
 private:
 
   bool validate_username(std::shared_ptr<Connection>);
-	void send_to_user(std::string, std::string);
-	void broadcast_connection(std::string);
 	void send_user_list(std::string);
 
   std::recursive_mutex pool_recursive_mutex;

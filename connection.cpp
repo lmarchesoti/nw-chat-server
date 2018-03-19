@@ -2,6 +2,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <iostream>
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 
@@ -36,4 +37,17 @@ std::string Connection::receive() {
 void Connection::disconnect(){
 
   shutdown(*sockfd, SHUT_RDWR);
+}
+
+void Connection::start_listening() {
+
+	listener = std::thread(&Connection::listen, std::ref(*this));
+}
+
+void Connection::listen() {
+
+	std::string msg;
+
+	while ((msg = this->receive()) == "ping");
+	std::cout << msg << std::endl;
 }

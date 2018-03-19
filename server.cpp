@@ -10,11 +10,9 @@
 int main(void)
 {
 
-  ConnectionPool pool;
+	ConnectionPool pool;
 
   std::thread t1(&ConnectionPool::start_listening, std::ref(pool));
-  //while(true) usleep(60*1000*1000);
-  //pool.idle();
 	pool.route_messages();
 
   return 0;
