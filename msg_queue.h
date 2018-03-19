@@ -10,6 +10,7 @@ class MsgQueue {
 public:
   void add_message(std::string, std::string);
   std::pair<std::string, std::string> retrieve_one();
+	bool pending();
 
 private:
 

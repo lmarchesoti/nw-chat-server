@@ -18,6 +18,7 @@ public:
   void remove(std::string);
   void start_listening();
   void idle();
+	void route_messages();
 
 private:
 

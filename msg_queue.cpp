@@ -16,3 +16,10 @@ std::pair<std::string, std::string> MsgQueue::retrieve_one() {
   this->queue.pop();
   return msg_object;
 }
+
+bool MsgQueue::pending() {
+
+  std::lock_guard<std::mutex> lock(this->global_lock);
+
+	return this->queue.size() > 0;
+}

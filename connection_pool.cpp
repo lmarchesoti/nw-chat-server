@@ -36,7 +36,7 @@ void ConnectionPool::start_listening() {
   while(true) {  // main accept() loop
 
     auto sock = acceptor.listen_accept();
-    auto conn = std::make_shared<Connection>(sock);
+    auto conn = std::make_shared<Connection>(sock, this->msg_q);
 
     std::string username = conn->receive();
 
@@ -51,6 +51,10 @@ void ConnectionPool::start_listening() {
 	// send connection notification
 	//this->notify_connect(username);
 
+	this->msg_q->add_message(username, "Hello, world!");
+	sleep(1);
+	printf("sending goodbye\n");
+	this->msg_q->add_message(username, "Goodbye!");
 /*
 	conn->send_msg("Hello, world!");
 	sleep(1);
@@ -94,6 +98,22 @@ bool ConnectionPool::validate_username(std::shared_ptr<Connection> conn) {
     return false;
 
   return true;
+}
+
+void ConnectionPool::route_messages() {
+
+	while(true) {
+
+		if(this->msg_q->pending()) {
+			auto msg_object = this->msg_q->retrieve_one();
+
+			std::string username = msg_object.first;
+			std::string msg = msg_object.second;
+			auto conn = this->pool[username];
+			conn->send_msg(msg);
+		}
+	}
+
 }
 
 //void ConnectionPool::notify_connect(std::string username) {
