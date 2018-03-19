@@ -12,6 +12,7 @@ public:
   ~Connection();
   void send_msg(std::string);
   std::string receive();
+  void disconnect();
 
 private:
   std::shared_ptr<int> sockfd;

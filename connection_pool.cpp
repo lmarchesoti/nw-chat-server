@@ -1,33 +1,31 @@
 #include "connection_pool.h"
 #include "acceptor.h"
+#include "msg_queue.h"
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <chrono>
 #include <mutex>
+#include <memory>
+
+#include <iostream>
 
 ConnectionPool::ConnectionPool() {
-  pool = std::make_shared<std::map<std::string, std::shared_ptr<Connection>>>();
-}
 
-//std::mutex pool_mutex;
+  this->msg_q = std::make_shared<MsgQueue>();
+}
 
 void ConnectionPool::add(std::string name, std::shared_ptr<Connection> conn){
 
-  //std::lock_guard<std::mutex> lock(pool_mutex);
-  (*pool)[name] = conn;
+  std::lock_guard<std::mutex> lock(this->pool_mutex);
+  pool[name] = conn;
 }
 
 void ConnectionPool::remove(std::string name){
 
-  //std::lock_guard<std::mutex> lock(pool_mutex);
-  pool->erase(name);
-}
-
-std::shared_ptr<Connection> ConnectionPool::operator[](std::string name) {
-
-  //std::lock_guard<std::mutex> lock(pool_mutex);
-  return pool->at(name);
+  std::lock_guard<std::mutex> lock(this->pool_mutex);
+  pool[name]->disconnect();
+  pool.erase(name);
 }
 
 void ConnectionPool::start_listening() {
@@ -42,20 +40,36 @@ void ConnectionPool::start_listening() {
 
     std::string username = conn->receive();
 
-    if ((pool->find(username) == pool->end())) {
-    //if (pool.count(username) == 0) {
+    if ((pool.find(username) == pool.end())) {
 
-      this->add(username, conn);
-      printf("new user %s\n", username.c_str());
+      if(this->validate_username(conn)) {
 
-      conn->send_msg("OK");
-      if(conn->receive() != "OK")
+	this->add(username, conn);
+
+	printf("new user %s\n", username.c_str());
+
+	// send connection notification
+	//this->notify_connect(username);
+
+/*
+	conn->send_msg("Hello, world!");
+	sleep(1);
+	printf("sending goodbye\n");
+	conn->send_msg("Goodbye!");
+
+	std::string msg;
+	while ((msg = conn->receive()) == "ping");
+	std::cout << msg << std::endl;
+	//pool[username]->send_msg("1");
+	//pool[username]->send_msg("Hello, world!");
+	//remove(username);
+*/
+
+      } else {
+
 	this->remove(username);
+      }
 
-      conn->send_msg("Hello, world!");
-      //(*pool)[username]->send_msg("1");
-      //(*pool)[username]->send_msg("Hello, world!");
-      //remove(username);
     } else {
 
       printf("denied user %s\n", username.c_str());
@@ -67,9 +81,23 @@ void ConnectionPool::start_listening() {
 
 void ConnectionPool::idle() {
 
-  // 60 seconds in microseconds
-  int duration = 60*1000*1000;
+  int duration = 60;
 
   while(true)
-    usleep(duration);
+    sleep(duration);
 }
+
+bool ConnectionPool::validate_username(std::shared_ptr<Connection> conn) {
+
+  conn->send_msg("OK");
+  if(conn->receive() != "OK")
+    return false;
+
+  return true;
+}
+
+//void ConnectionPool::notify_connect(std::string username) {
+
+  
+
+//}

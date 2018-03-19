@@ -33,3 +33,7 @@ std::string Connection::receive() {
   return std::string(buf);
 }
 
+void Connection::disconnect(){
+
+  shutdown(*sockfd, SHUT_RDWR);
+}
