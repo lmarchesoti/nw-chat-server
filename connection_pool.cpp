@@ -1,6 +1,7 @@
 #include "connection_pool.h"
 #include "acceptor.h"
 #include "msg_queue.h"
+#include "log.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -29,6 +30,9 @@ void ConnectionPool::remove(std::string name){
 }
 
 void ConnectionPool::start_listening() {
+
+	auto log = Log::get();
+	log->log_this("starting server...");
 
   Acceptor acceptor;
   acceptor.setup();
