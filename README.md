@@ -3,6 +3,8 @@ ss -lptn 'sport = :80'
 
 TODO:
 
+* forward messages in thread
+* fix spontaneous disconnect: bad file descriptor
 * register user in separate thread
 * add log class
 * add GUI
