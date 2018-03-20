@@ -46,36 +46,15 @@ void ConnectionPool::start_listening() {
 
 				conn->username = username;
 
-	printf("new user %s\n", username.c_str());
+				printf("new user %s\n", username.c_str());
 
-	this->add(username, conn);
+				this->add(username, conn);
 
-	this->send_user_list(username);
+				this->send_user_list(username);
 
-	conn->start_listening();
+				conn->start_listening();
 
-	this->msg_q->add_message(username, "Hello, world!");
-	sleep(1);
-	printf("sending goodbye\n");
-	this->msg_q->add_message(username, "Goodbye!");
-/*
-	conn->send_msg("Hello, world!");
-	sleep(1);
-	printf("sending goodbye\n");
-	conn->send_msg("Goodbye!");
-
-	std::string msg;
-	while ((msg = conn->receive()) == "ping");
-	std::cout << msg << std::endl;
-	//pool[username]->send_msg("1");
-	//pool[username]->send_msg("Hello, world!");
-	//remove(username);
-*/
-
-      } else {
-
-	//this->remove(username);
-      }
+			}
 
     } else {
 
@@ -122,8 +101,14 @@ void ConnectionPool::send_to_user(std::string username, std::string msg) {
 
   std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
 
-	auto conn = this->pool[username];
-	conn->send_msg(msg);
+	try {
+		auto conn = this->pool[username];
+	//if (conn == nullptr) return;
+
+		conn->send_msg(msg);
+	} catch (std::out_of_range e) {
+
+	}
 }
 
 void ConnectionPool::broadcast(std::string username, std::string message) {

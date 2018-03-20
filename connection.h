@@ -27,9 +27,12 @@ public:
 private:
 	void listen();
 	void process_disconnect();
-	void process_message(std::string);
+	void process_message();
 	void process_data(std::string);
 	void strip_leading_linebreaks();
+	bool valid_token();
+	std::string extract_token();
+	void restore(std::string);
 
   std::shared_ptr<int> sockfd;
 	//std::shared_ptr<MsgQueue> msg_q;
