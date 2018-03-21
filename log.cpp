@@ -35,7 +35,7 @@ void Log::consume_messages() {
 			this->queue_cv.wait(lock, [=]{return this->log_queue.size() > 0;});
 
 			std::ofstream logfile("log.txt", std::ios_base::app);
-			logfile << this->log_queue.front();
+			logfile << this->log_queue.front() << std::endl;
 			this->log_queue.pop();
 
 		}

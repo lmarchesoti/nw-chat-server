@@ -1,5 +1,7 @@
 #include "acceptor.h"
 
+//#include <string>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,6 +14,8 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+
+#include "log.h"
 
 #define PORT "3490"  // the port users will be connecting to
 
@@ -62,6 +66,9 @@ std::shared_ptr<int> Acceptor::listen_accept(){
       get_in_addr((struct sockaddr *)&their_addr),
       s, sizeof s);
   printf("server: got connection from %s\n", s);
+
+	auto log = Log::get();
+	log->log_this(std::string("server: got connection from ") + s);
 
   return new_fd;
 }

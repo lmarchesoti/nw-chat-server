@@ -2,8 +2,9 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <iostream>
 #include "connection_pool.h"
+#include <iostream>
+#include "log.h"
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 
@@ -28,6 +29,8 @@ std::string Connection::receive() {
 
   if ((numbytes = recv(*sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
       perror("recv");
+		auto log = Log::get();
+		log->log_this(this->username + " disconnected.");
 		std::cerr << this->username + " disconnected." << std::endl;
       //exit(1);
 		throw false;
@@ -121,6 +124,8 @@ void Connection::process_disconnect() {
 
 	this->active = false;
 	std::cerr << this->username << " disconnected" << std::endl;
+	auto log = Log::get();
+	log->log_this(this->username + " disconnected.");
 	this->conn_pool->broadcast(this->username, username + " disconnected.");
 	this->conn_pool->remove(this->username);
 }
@@ -138,6 +143,9 @@ void Connection::process_message() {
 
 			std::string message = this->extract_token();
 			this->conn_pool->send_to_user(to, username + ": " + message);
+
+			auto log = Log::get();
+			log->log_this(this->username + " to " + to + ": " + message);
 
 		} else {
 

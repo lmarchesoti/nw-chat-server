@@ -51,6 +51,7 @@ void ConnectionPool::start_listening() {
 				conn->username = username;
 
 				printf("new user %s\n", username.c_str());
+				log->log_this(username + " connected.");
 
 				this->add(username, conn);
 
