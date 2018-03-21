@@ -141,15 +141,14 @@ void ConnectionPool::send_user_list(std::string username) {
 
   std::lock_guard<std::recursive_mutex> lock(this->pool_recursive_mutex);
   
-	std::string message = "logged users:\n";
 	for(auto it=this->pool.begin(); it!=this->pool.end(); ++it) {
 
 		if (it->first != username) {
-			message += it->first + "\n";
+			std::string message = "connection\n" + it->first + "\n";
+			this->send_to_user(username, message);
 		}
 	}
 
-	this->send_to_user(username, message);
 	this->msg_q_cv.notify_all();
 }
 

@@ -49,7 +49,7 @@ void Connection::disconnect(){
 void Connection::start_listening() {
 
 	this->active = true;
-	this->conn_pool->broadcast(this->username, username + " connected.");
+	this->conn_pool->broadcast(this->username, "connection\n"+username);
 	this->listener = std::thread(&Connection::listen, std::ref(*this));
 	this->listener.detach();
 }
@@ -126,7 +126,7 @@ void Connection::process_disconnect() {
 	std::cerr << this->username << " disconnected" << std::endl;
 	auto log = Log::get();
 	log->log_this(this->username + " disconnected.");
-	this->conn_pool->broadcast(this->username, username + " disconnected.");
+	this->conn_pool->broadcast(this->username, "disconnection\n"+username);
 	this->conn_pool->remove(this->username);
 }
 
@@ -142,7 +142,8 @@ void Connection::process_message() {
 		if (this->valid_token()) {
 
 			std::string message = this->extract_token();
-			this->conn_pool->send_to_user(to, username + ": " + message);
+			std::string formatted_msg = "message\n"+username+"\n"+message+"\n";
+			this->conn_pool->send_to_user(to, formatted_msg);
 
 			auto log = Log::get();
 			log->log_this(this->username + " to " + to + ": " + message);
