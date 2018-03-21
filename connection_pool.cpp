@@ -89,15 +89,22 @@ bool ConnectionPool::validate_username(std::shared_ptr<Connection> conn) {
 
 void ConnectionPool::route_messages() {
 
+	this->router = std::thread(&ConnectionPool::route, std::ref(*this));
+	this->router.detach();
+}
+
+void ConnectionPool::route() {
+
 	while(true) {
 
-		if(this->msg_q->pending()) {
-			auto msg_object = this->msg_q->retrieve_one();
+		std::unique_lock<std::recursive_mutex> lock(this->pool_recursive_mutex);
+		this->msg_q_cv.wait(lock, [=]{return this->msg_q->pending();});
 
-			std::string username = msg_object.first;
-			std::string msg = msg_object.second;
-			this->send_to_user(username, msg);
-		}
+		auto msg_object = this->msg_q->retrieve_one();
+
+		std::string username = msg_object.first;
+		std::string msg = msg_object.second;
+		this->send_to_user(username, msg);
 	}
 
 }
@@ -127,6 +134,7 @@ void ConnectionPool::broadcast(std::string username, std::string message) {
 			this->msg_q->add_message(it->first, message);
 		}
 	}
+	this->msg_q_cv.notify_all();
 }
 
 void ConnectionPool::send_user_list(std::string username) {
@@ -142,5 +150,6 @@ void ConnectionPool::send_user_list(std::string username) {
 	}
 
 	this->send_to_user(username, message);
+	this->msg_q_cv.notify_all();
 }
 

@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS=-std=c++11 -pthread -ggdb #-I /home/ubuntu/boost_1_66_0/ 
+CPPFLAGS=-std=c++11 -pthread -ggdb #-Wl,--no-as-needed -lpthread #-I /home/ubuntu/boost_1_66_0/ 
 #LDFLAGS=-L/home/ubuntu/boost_1_66_0/stage/lib/ 
 #LDLIBS=-lboost_regex -lpthread -lboost_system
 

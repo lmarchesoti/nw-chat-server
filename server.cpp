@@ -14,6 +14,7 @@ int main(void)
 
   std::thread t1(&ConnectionPool::start_listening, std::ref(pool));
 	pool.route_messages();
+	pool.idle();
 
   return 0;
 }
