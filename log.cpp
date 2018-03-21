@@ -11,6 +11,8 @@ std::shared_ptr<Log> Log::get() {
 
 	static auto instance = std::make_shared<Log>();
 
+	instance->start();
+
 	return instance;
 
 }
@@ -20,7 +22,7 @@ void Log::log_this(std::string s) {
 	std::lock_guard<std::mutex> lock(this->queue_mutex);
 
 	this->log_queue.push(s);
-	this->queue_cv.notify_all();
+	this->queue_cv.notify_one();
 }
 
 void Log::consume_messages() {
@@ -30,7 +32,7 @@ void Log::consume_messages() {
 		{
 			std::unique_lock<std::mutex> lock(this->queue_mutex);
 
-			this->queue_cv.wait(lock);
+			this->queue_cv.wait(lock, [=]{return this->log_queue.size() > 0;});
 
 			std::ofstream logfile("log.txt", std::ios_base::app);
 			logfile << this->log_queue.front();
@@ -45,7 +47,7 @@ void Log::start() {
 	if (this->logging == false) {
 
 		this->logging = true;
-		std::thread t(&Log::consume_messages, Log::get());//std::ref(Log::get()));
+		std::thread t(&Log::consume_messages, std::ref(*(Log::get())));
 		t.detach();
 	}
 }
